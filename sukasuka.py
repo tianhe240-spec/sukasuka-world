@@ -14,7 +14,7 @@ st.markdown("""
 # 2. 初始化变量
 if 'day' not in st.session_state:
     st.session_state.update({
-        'day': 1, 'hp': 100, 'favor': 20, 'phase': 'setup',
+        'day': 1, 'hp': 100, 'favor': 40, 'phase': 'setup',
         'time_of_day': '白天', 'name': "？",
         'last_result': "欢迎来到sukasuka。这里每一天都可能是你的祭日。",
         'death_reason': ""
