@@ -6,8 +6,13 @@ import random
 st.set_page_config(page_title="Sukasuka七日纪", page_icon="🔞", layout="wide")
 st.markdown("""
     <style>
+    /* 原有的红色大字样式 */
     .big-font { font-size:28px !important; color: #FF0000; font-weight: bold; border: 3px solid #FF0000; padding: 15px; border-radius: 10px; background-color: #ffebeb; line-height: 1.5; }
-    .death-font { font-size:40px !important; color: #000000; background-color: #FF0000; font-weight: bold; text-align: center; padding: 20px; }
+    
+    /* 新增：隐藏结局的粉色样式 */
+    .pink-font { font-size:30px !important; color: #D81B60; font-weight: bold; border: 5px double #F48FB1; padding: 20px; border-radius: 20px; background-color: #FCE4EC; text-align: center; box-shadow: 0 4px 15px rgba(244, 143, 177, 0.3); }
+
+    .death-font { font-size:40px !important; color: #ffffff; background-color: #FF0000; font-weight: bold; text-align: center; padding: 20px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -71,8 +76,9 @@ def handle_event(choice):
     if key in EVENTS:
         desc, h_chg, f_chg, instant_death = random.choice(EVENTS[key])
         st.session_state.last_result = desc
+        st.session_state.new_event_triggered = True  # 触发打字机开关
 
-        # 1. 处理【即死】陷阱
+        # 1. 判定即死
         if instant_death:
             st.session_state.hp = 0
             st.session_state.death_reason = f"【暴毙】{desc}"
@@ -82,39 +88,31 @@ def handle_event(choice):
         # 2. 更新数值
         st.session_state.hp += h_chg
         st.session_state.favor += f_chg
-        st.session_state.new_event_triggered = True
 
-        # 3. 【核心修复】增加常规死亡判定
-        # 即使不是即死陷阱，如果好感度被扣完了，也要立刻结算
+        # 3. 判定数值死亡
         if st.session_state.hp <= 0:
-            st.session_state.death_reason = "你精疲力竭，倒在了 sukasuka 的走廊里..."
+            st.session_state.death_reason = "你在这片极乐净土中耗尽了最后一丝生命，卒。"
             st.session_state.phase = 'end'
-            return # 直接跳出，不再执行后面的切换天数
-        
-        if st.session_state.favor <= 0:
-            st.session_state.death_reason = "女王对你彻底失去了兴趣，把你扔进了焚化炉。"
+            return
+        elif st.session_state.favor <= 0:
+            st.session_state.death_reason = "好感过低，女王觉得你毫无趣味，把你踢出了宫殿。"
             st.session_state.phase = 'end'
-            return # 直接跳出
+            return
+        elif st.session_state.favor >= 100:
+            st.session_state.death_reason = "你太讨喜了，女王决定把你浸在福尔马林里永久珍藏。"
+            st.session_state.phase = 'end'
+            return
+        elif st.session_state.day > 7:
+            st.session_state.phase = 'end'
+            return
 
-        # 4. 只有在没死的情况下，才切换时间/天数
+        # 4. 没死才切换天数
         if st.session_state.time_of_day == '白天':
             st.session_state.time_of_day = '晚上'
         else:
             st.session_state.time_of_day = '白天'
             st.session_state.day += 1
 
-    # 常规检查
-    if st.session_state.hp <= 0:
-        st.session_state.death_reason = "你在这片极乐净土中耗尽了最后一丝生命，卒。"
-        st.session_state.phase = 'end'
-    elif st.session_state.favor <= 0:
-        st.session_state.death_reason = "女王觉得你连垃圾都不如，把你塞进炮筒发射了出去。"
-        st.session_state.phase = 'end'
-    elif st.session_state.favor >= 100:
-        st.session_state.death_reason = "你太讨喜了，女王决定把你浸在福尔马林里永久珍藏。"
-        st.session_state.phase = 'end'
-    elif st.session_state.day > 7:
-        st.session_state.phase = 'end'
 
 
 # --- UI 渲染 ---
@@ -128,13 +126,45 @@ with st.sidebar:
     st.subheader(f"📅 第 {st.session_state.day} 天 ({st.session_state.time_of_day})")
 
 if st.session_state.phase == 'setup':
-    st.session_state.name = st.text_input("输入你的大名，准备迎接处刑：", value="")
+    st.subheader("🕵️‍♂️ 潜入前奏")
+    # 获取输入
+    name_input = st.text_input("输入你的大名，准备迎接处刑：", value="")
+
     if st.button("进入 sukasuka"):
-        st.session_state.phase = 'action'
+        # --- 隐藏彩蛋判定 ---
+        if name_input == "姐姐我喜欢你":
+            st.session_state.name = "被救走的幸运儿"
+            st.session_state.phase = 'end'
+            # 使用粉色样式包装结局
+            st.session_state.death_reason = '<div class="pink-font">💖 触发隐藏结局：天和从天而降，一把抱起你跳出窗外，把你救走啦喵喵喵！</div>'
+            st.session_state.day = 7 # 强行算作存活到最后
+        else:
+            st.session_state.name = name_input
+            st.session_state.phase = 'action'
         st.rerun()
+
 elif st.session_state.phase == 'action':
     st.markdown("### 📢 实时奇遇：")
-    result_placeholder = st.empty()  # 创建一个动态占位符
+    result_placeholder = st.empty() 
+
+    # 打字机渲染函数
+    def typewriter_effect(text):
+        full_text = ""
+        for char in text:
+            full_text += char
+            result_placeholder.markdown(f'<div class="big-font">{full_text}</div>', unsafe_allow_html=True)
+            import time
+            time.sleep(0.04)
+
+    # 逻辑判断：是新事件就打字，否则直接显示
+    if st.session_state.get('new_event_triggered', False):
+        typewriter_effect(st.session_state.last_result)
+        st.session_state.new_event_triggered = False 
+    else:
+        result_placeholder.markdown(f'<div class="big-font">{st.session_state.last_result}</div>', unsafe_allow_html=True)
+
+    st.write("---")
+
 
     # 打字机特效函数
     def typewriter_effect(text):
