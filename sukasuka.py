@@ -104,7 +104,7 @@ def handle_event(choice):
 
 
 # --- UI 渲染 ---
-st.title("🏰 sukasuka七日记：死亡模式")
+st.title("🏰 Sukasuka七日纪")
 
 with st.sidebar:
     st.header(f"🕺 选手：{st.session_state.name}")
