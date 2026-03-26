@@ -114,7 +114,7 @@ with st.sidebar:
     st.subheader(f"📅 第 {st.session_state.day} 天 ({st.session_state.time_of_day})")
 
 if st.session_state.phase == 'setup':
-    st.session_state.name = st.text_input("输入你的大名，准备迎接处刑：", value="天和")
+    st.session_state.name = st.text_input("输入你的大名，准备迎接处刑：", value="？")
     if st.button("进入 sukasuka"):
         st.session_state.phase = 'action'
         st.rerun()
