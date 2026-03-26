@@ -136,7 +136,7 @@ if st.session_state.phase == 'setup':
             st.session_state.name = "被救走的幸运儿"
             st.session_state.phase = 'end'
             # 使用粉色样式包装结局
-            st.session_state.death_reason = '<div class="pink-font">💖 触发隐藏结局：天和从天而降，一把抱起你跳出窗外，把你救走啦喵喵喵！</div>'
+            st.session_state.death_reason = '<div class="pink-font">💖 触发隐藏结局：athe把你带走啦喵喵喵</div>'
             st.session_state.day = 7 # 强行算作存活到最后
         else:
             st.session_state.name = name_input
