@@ -120,7 +120,7 @@ if st.session_state.phase == 'setup':
         if name_input == "姐姐我喜欢你":
             st.session_state.name = "幸运儿"
             st.session_state.phase = 'end'
-            st.session_state.death_reason = '<div class="pink-font">💖 触发隐藏结局：athe把你带走啦喵喵喵</div>'
+            st.session_state.death_reason = '<div class="pink-font"> 触发隐藏结局：athe把你带走啦喵喵喵（> <）</div>'
             st.session_state.day = 999 
         else:
             st.session_state.name = name_input
