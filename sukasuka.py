@@ -50,7 +50,7 @@ EVENTS = {
         ("你睡得正香，隔壁奶0爬上你的床非要给你‘讲故事’，你被折腾了一宿没合眼，但很爽，精神极佳。", 10, -10, False),
         ("你梦见自己回到了家乡，结果女王突然出现在梦里把你吓醒，吓得你阳痿了三天，女王很不满，但你这几天得到了休息。", 10, -10, False),
         ("睡得太沉，被子被路过的壮汉偷走闻，你被冻感冒了。", -10, 0, False),
-        ("一个完美的深度睡眠，你梦到了壮汉给你推拿，醒来后床单湿湿的，下面硬硬的，裤子脏脏的。", 20, -20, False)
+        ("一个完美的深度睡眠，你梦到了壮汉给你推拿，醒来后床单湿湿的，下面硬硬的，裤子脏脏的。", 20, 10, False)
     ],
     "晚上_深夜溜达": [
         ("你误入女王的秘药室，闻到了禁忌的香气，你的身体发生了不可名状的变异。", 20, 20, False),
@@ -72,17 +72,31 @@ def handle_event(choice):
         desc, h_chg, f_chg, instant_death = random.choice(EVENTS[key])
         st.session_state.last_result = desc
 
+        # 1. 处理【即死】陷阱
         if instant_death:
             st.session_state.hp = 0
             st.session_state.death_reason = f"【暴毙】{desc}"
             st.session_state.phase = 'end'
             return
 
+        # 2. 更新数值
         st.session_state.hp += h_chg
         st.session_state.favor += f_chg
-
         st.session_state.new_event_triggered = True
 
+        # 3. 【核心修复】增加常规死亡判定
+        # 即使不是即死陷阱，如果好感度被扣完了，也要立刻结算
+        if st.session_state.hp <= 0:
+            st.session_state.death_reason = "你精疲力竭，倒在了 sukasuka 的走廊里..."
+            st.session_state.phase = 'end'
+            return # 直接跳出，不再执行后面的切换天数
+        
+        if st.session_state.favor <= 0:
+            st.session_state.death_reason = "女王对你彻底失去了兴趣，把你扔进了焚化炉。"
+            st.session_state.phase = 'end'
+            return # 直接跳出
+
+        # 4. 只有在没死的情况下，才切换时间/天数
         if st.session_state.time_of_day == '白天':
             st.session_state.time_of_day = '晚上'
         else:
