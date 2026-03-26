@@ -126,9 +126,9 @@ with st.sidebar:
     st.subheader(f"📅 第 {st.session_state.day} 天 ({st.session_state.time_of_day})")
 
 if st.session_state.phase == 'setup':
-    st.subheader("🕵️‍♂️ 潜入前奏")
+    st.subheader("你醒在sukasuka的入口，一位漂亮的保安正看着你……")
     # 获取输入
-    name_input = st.text_input("输入你的大名，准备迎接处刑：", value="")
+    name_input = st.text_input("告诉她你的名字：", value="")
 
     if st.button("进入 sukasuka"):
         # --- 隐藏彩蛋判定 ---
